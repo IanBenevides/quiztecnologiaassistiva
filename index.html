@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo: Missão Autonomia Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .correct {
+            background-color: #D1FAE5 !important;
+            border-color: #10B981 !important;
+        }
+        .incorrect {
+            background-color: #FEE2E2 !important;
+            border-color: #EF4444 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 w-full max-w-2xl">
+        
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">Missão: Autonomia Digital</h1>
+            <p class="text-center text-gray-600 mt-4 mb-8">Resolva desafios do dia a dia usando a tecnologia certa e mostre que você está conectado!</p>
+            <button id="start-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">Começar o Jogo</button>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-sm font-semibold text-gray-500">Questão <span id="question-number">1</span> de <span id="total-questions"></span></p>
+                <p class="text-sm font-semibold text-gray-500">Pontos: <span id="score">0</span></p>
+            </div>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                <h2 id="scenario-text" class="text-lg md:text-xl text-gray-800"></h2>
+            </div>
+
+            <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- As opções serão inseridas aqui pelo JavaScript -->
+            </div>
+
+            <div id="feedback-area" class="mt-6 text-center">
+                <p id="feedback-text" class="font-semibold"></p>
+                <button id="next-button" class="hidden mt-4 bg-gray-800 text-white font-bold py-2 px-8 rounded-lg hover:bg-gray-900 transition-colors">Próxima</button>
+            </div>
+        </div>
+
+        <div id="end-screen" class="hidden text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Parabéns!</h1>
+            <p class="text-gray-600 mt-2">Você completou a Missão: Autonomia Digital.</p>
+            <div class="my-6">
+                <p class="text-lg">Sua pontuação final foi:</p>
+                <p id="final-score" class="text-5xl font-bold text-blue-600"></p>
+            </div>
+            <button id="restart-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">Jogar Novamente</button>
+        </div>
+
+    </div>
+
+    <script>
+        const scenarios = [
+            {
+                scenario: "Dona Lúcia precisa se lembrar de tomar o remédio da pressão às 20h. Qual ferramenta ela deve usar?",
+                options: [
+                    { text: "Assistente de Voz", icon: "🗣️", id: "voz" },
+                    { text: "App de Transporte", icon: "🚗", id: "transporte" },
+                    { text: "Hand Talk", icon: "🤟", id: "handtalk" },
+                    { text: "Smartwatch", icon: "⌚", id: "smartwatch" }
+                ],
+                correct: "voz",
+                feedback: "Correto! O assistente de voz é perfeito para criar lembretes."
+            },
+            {
+                scenario: "Carlos mora sozinho e tem receio de sofrer uma queda e não conseguir pedir ajuda. O que o deixaria mais seguro?",
+                options: [
+                    { text: "Localizador de Objetos", icon: "🔑", id: "localizador" },
+                    { text: "Smartwatch com Detecção de Queda", icon: "⌚", id: "smartwatch" },
+                    { text: "App de Entregas", icon: "🛍️", id: "entregas" },
+                    { text: "Videochamada", icon: "📹", id: "videochamada" }
+                ],
+                correct: "smartwatch",
+                feedback: "Exato! O relógio pode ligar para a emergência sozinho."
+            },
+            {
+                scenario: "Joana quer conversar com sua neta, que é surda e se comunica por Libras. Qual app pode ajudar?",
+                options: [
+                    { text: "App de Transporte", icon: "🚗", id: "transporte" },
+                    { text: "Assistente de Voz", icon: "🗣️", id: "voz" },
+                    { text: "Hand Talk", icon: "🤟", id: "handtalk" },
+                    { text: "Automação Residencial", icon: "💡", id: "automacao" }
+                ],
+                correct: "handtalk",
+                feedback: "Perfeito! O Hand Talk traduz a voz para Libras, facilitando a comunicação."
+            },
+            {
+                scenario: "Mário precisa ir ao médico, mas não quer dirigir hoje. Como ele pode chegar à consulta com facilidade?",
+                options: [
+                    { text: "App de Transporte", icon: "🚗", id: "transporte" },
+                    { text: "App de Entregas", icon: "🛍️", id: "entregas" },
+                    { text: "Localizador de Objetos", icon: "🔑", id: "localizador" },
+                    { text: "Smartwatch", icon: "⌚", id: "smartwatch" }
+                ],
+                correct: "transporte",
+                feedback: "Isso mesmo! Um app de transporte oferece mobilidade e segurança."
+            },
+            {
+                scenario: "Toda vez que se levanta à noite, Beto tem medo de tropeçar. O que pode iluminar seu caminho sem que ele precise procurar o interruptor?",
+                options: [
+                    { text: "Videochamada", icon: "📹", id: "videochamada" },
+                    { text: "Automação com Lâmpadas Inteligentes", icon: "💡", id: "automacao" },
+                    { text: "Hand Talk", icon: "🤟", id: "handtalk" },
+                    { text: "App de Entregas", icon: "🛍️", id: "entregas" }
+                ],
+                correct: "automacao",
+                feedback: "Ótima escolha! Com lâmpadas inteligentes, ele pode acender a luz com a voz."
+            },
+            {
+                scenario: "Ana vive perdendo suas chaves dentro de casa. Qual tecnologia a ajudaria a encontrá-las rapidamente?",
+                options: [
+                    { text: "Assistente de Voz", icon: "🗣️", id: "voz" },
+                    { text: "Smartwatch", icon: "⌚", id: "smartwatch" },
+                    { text: "Localizador de Objetos", icon: "🔑", id: "localizador" },
+                    { text: "App de Transporte", icon: "🚗", id: "transporte" }
+                ],
+                correct: "localizador",
+                feedback: "Correto! Um localizador faz o chaveiro apitar, facilitando a busca."
+            }
+        ];
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const nextButton = document.getElementById('next-button');
+
+        const scenarioText = document.getElementById('scenario-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const feedbackText = document.getElementById('feedback-text');
+        
+        const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const scoreEl = document.getElementById('score');
+        const finalScoreEl = document.getElementById('final-score');
+
+        let currentScenarioIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function startGame() {
+            currentScenarioIndex = 0;
+            score = 0;
+            answered = false;
+            
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            totalQuestionsEl.textContent = scenarios.length;
+            scoreEl.textContent = score;
+            nextButton.classList.add('hidden');
+
+            loadScenario();
+        }
+
+        function loadScenario() {
+            answered = false;
+            const currentScenario = scenarios[currentScenarioIndex];
+            
+            questionNumberEl.textContent = currentScenarioIndex + 1;
+            scenarioText.textContent = currentScenario.scenario;
+            optionsGrid.innerHTML = '';
+            feedbackText.textContent = '';
+            nextButton.classList.add('hidden');
+
+            currentScenario.options.forEach(option => {
+                const card = document.createElement('div');
+                card.className = 'card bg-gray-50 border-2 border-gray-200 rounded-lg p-4 flex items-center space-x-4';
+                card.dataset.id = option.id;
+                card.innerHTML = `
+                    <div class="text-3xl">${option.icon}</div>
+                    <div class="font-semibold text-gray-700">${option.text}</div>
+                `;
+                card.addEventListener('click', selectOption);
+                optionsGrid.appendChild(card);
+            });
+        }
+
+        function selectOption(e) {
+            if (answered) return;
+            answered = true;
+
+            const selectedCard = e.currentTarget;
+            const selectedId = selectedCard.dataset.id;
+            const correctId = scenarios[currentScenarioIndex].correct;
+
+            if (selectedId === correctId) {
+                score += 10;
+                scoreEl.textContent = score;
+                selectedCard.classList.add('correct');
+                feedbackText.textContent = scenarios[currentScenarioIndex].feedback;
+                feedbackText.classList.remove('text-red-600');
+                feedbackText.classList.add('text-green-600');
+            } else {
+                selectedCard.classList.add('incorrect');
+                feedbackText.textContent = "Não é bem isso. Tente pensar em outra solução.";
+                feedbackText.classList.remove('text-green-600');
+                feedbackText.classList.add('text-red-600');
+                
+                // Mostra a resposta correta
+                const correctCard = optionsGrid.querySelector(`[data-id="${correctId}"]`);
+                correctCard.classList.add('correct');
+            }
+
+            nextButton.classList.remove('hidden');
+            if (currentScenarioIndex === scenarios.length - 1) {
+                nextButton.textContent = 'Finalizar';
+            } else {
+                nextButton.textContent = 'Próxima';
+            }
+        }
+
+        function handleNext() {
+            currentScenarioIndex++;
+            if (currentScenarioIndex < scenarios.length) {
+                loadScenario();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            finalScoreEl.textContent = score;
+        }
+
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        nextButton.addEventListener('click', handleNext);
+
+    </script>
+</body>
+</html>
